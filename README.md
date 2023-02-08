@@ -27,8 +27,52 @@
 Создайте файл с правилом оповещения, как в лекции, и добавьте его в конфиг Prometheus.
 
 *Погасите node exporter, стоящий на мониторинге, и прикрепите скриншот раздела оповещений Prometheus, где оповещение будет в статусе Pending.*
+
+Создаём файл с правилом оповещения
 ```
+sudo nano /etc/prometheus/netology-test.yml
+sudo chown -R prometheus:prometheus /etc/prometheus/netology-test.yml
 ```
+Содержимое файла с правилом оповещения
+```
+groups: # Список групп
+- name: netology-test # Имя группы
+  rules: # Список правил текущей группы
+  - alert: InstanceDown # Название текущего правила
+    expr: up == 0 # Логическое выражение
+    for: 1m # Сколько ждать отбоя предупреждения перед отправкой оповещения
+    labels:
+      severity: critical # Критичность события
+    annotations: # Описание
+      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.' # Полное описание але>
+      summary: Instance {{ $labels.instance }} down # Краткое описание алерта
+```
+Подключаем правила к Prometheus
+```
+sudo nano /etc/prometheus/prometheus.yml #Содержимое файла ниже в блоке кода
+sudo systemctl restart prometheus
+sudo systemctl status prometheus
+```
+Содержимое файла prometheus.yml
+```
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+rule_files:
+  - "netology-test.yml"
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+```
+http://127.0.0.1:9090
+
 
 ![Скриншот раздела оповещений Prometheus](https://github.com/StanislavBaranovskii/9-5-hw-prometheus-2/blob/main/img/9-5-1.png "Скриншот раздела оповещений Prometheus")
 
