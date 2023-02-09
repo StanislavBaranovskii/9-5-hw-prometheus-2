@@ -89,16 +89,17 @@ http://127.0.0.1:9090
 
 *Прикрепите скриншот Alerts из Prometheus, где правило оповещения будет в статусе Fireing, и скриншот из Alertmanager, где будет видно действующее правило оповещения.*
 ```
-wget https://github.com/prometheus/alertmanager/releases/download/v0.25.0/alertmanager-0.25.0.darwin-amd64.tar.gz
-tar -xvf alertmanager-0.25.0.darwin-amd64.tar.gz
-sudo cp alertmanager-0.25.0.darwin-amd64/alertmanager /usr/local/bin
-sudo cp alertmanager-0.25.0.darwin-amd64/amtool /usr/local/bin
-sudo cp alertmanager-0.25.0.darwin-amd64/alertmanager.yml /etc/prometheus
+wget https://github.com/prometheus/alertmanager/releases/download/v0.25.0/alertmanager-0.25.0.linux-386.tar.gz
+tar -xvf alertmanager-0.25.0.linux-386.tar.gz 
+sudo cp alertmanager-0.25.0.linux-386/alertmanager /usr/local/bin
+sudo cp alertmanager-0.25.0.linux-386/amtool /usr/local/bin
+sudo cp alertmanager-0.25.0.linux-386/alertmanager.yml /etc/prometheus
 sudo chown -R prometheus:prometheus /etc/prometheus/alertmanager.yml
 sudo nano /etc/systemd/system/prometheus-alertmanager.service #Содержимое файла ниже в блоке кода
 sudo systemctl enable prometheus-alertmanager
 sudo systemctl start prometheus-alertmanager
 sudo systemctl status prometheus-alertmanager
+sudo journalctl -xeu prometheus-alertmanager.service
 ```
 Содержимое файла prometheus-alertmanager.service
 ```
@@ -117,6 +118,12 @@ ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 [Install]
 WantedBy=multi-user.target
+```
+Подключяем Prometheus к Alertmanager
+```
+sudo nano /etc/prometheus/prometheus.yml #В секцию alerting -> alertmanagers -> static_configs -> static_configs вписываем строку - localhost:9093
+sudo systemctl restart prometheus.service
+sudo systemctl status prometheus.service
 ```
 
 ![Скриншот Alerts из Prometheus](https://github.com/StanislavBaranovskii/9-5-hw-prometheus-2/blob/main/img/9-5-2-1.png "Скриншот Alerts из Prometheus")
