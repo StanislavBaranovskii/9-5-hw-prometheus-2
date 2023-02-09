@@ -1,4 +1,4 @@
-# Домашнее задание к занятию "`9.4. Prometheus`" - `Барановский Станислав`
+# Домашнее задание к занятию "`9.5. Prometheus. ч.2`" - `Барановский Станислав`
 
 
 ### Инструкция по выполнению домашнего задания
@@ -52,24 +52,29 @@ groups: # Список групп
 sudo nano /etc/prometheus/prometheus.yml #Содержимое файла ниже в блоке кода
 sudo systemctl restart prometheus
 sudo systemctl status prometheus
+sudo systemctl status node-exporter
+sudo systemctl stop node-exporter
 ```
 Содержимое файла prometheus.yml
 ```
-# my global config
 global:
   scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
           # - alertmanager:9093
+
 rule_files:
   - "netology-test.yml"
+
 scrape_configs:
   - job_name: "prometheus"
+    scrape_interval: 5s
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ['localhost:9090', 'localhost:9100']
 ```
 http://127.0.0.1:9090
 
