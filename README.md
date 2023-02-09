@@ -78,7 +78,6 @@ scrape_configs:
 ```
 http://127.0.0.1:9090
 
-
 ![Скриншот раздела оповещений Prometheus](https://github.com/StanislavBaranovskii/9-5-hw-prometheus-2/blob/main/img/9-5-1.png "Скриншот раздела оповещений Prometheus")
 
 ---
@@ -119,12 +118,13 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
-Подключяем Prometheus к Alertmanager
+Подключаем Prometheus к Alertmanager
 ```
 sudo nano /etc/prometheus/prometheus.yml #В секцию alerting -> alertmanagers -> static_configs -> static_configs вписываем строку - localhost:9093
 sudo systemctl restart prometheus.service
 sudo systemctl status prometheus.service
 ```
+http://localhost:9093
 
 ![Скриншот Alerts из Prometheus](https://github.com/StanislavBaranovskii/9-5-hw-prometheus-2/blob/main/img/9-5-2-1.png "Скриншот Alerts из Prometheus")
 ![Скриншот из Alertmanager](https://github.com/StanislavBaranovskii/9-5-hw-prometheus-2/blob/main/img/9-5-2-2.png "Скриншот из Alertmanager")
@@ -137,6 +137,39 @@ sudo systemctl status prometheus.service
 
 *Приложите скриншот браузера с открытым эндпоинтом, а также скриншот списка таргетов из интерфейса Prometheus.*
 ```
+# Устанавливаем Docker
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release -y
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/pgp | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo docker run hello-world
+sudo systemctl status docker
+
+# Включаем выгрузку данных на хосте с Docker
+sudo nano /etc/docker/daemon.json #Содержимое файла ниже в блоке кода
+sudo systemctl restart docker
+sudo systemctl status docker
+
+```
+Содержимое файла daemon.json
+```
+{
+ "metrics-addr" : "localhost:9323",
+ "experimental" : true
+}
+```
+http://localhost:9323/metrics
+
+```
+# Добавляем endpoint Docker в Prometheus
+sudo nano /etc/prometheus/prometheus.yml #В секцию  scrape_configs-> static_configs -> targets добавляем адрес localhost:9323
+sudo systemctl restart prometheus.service
+sudo systemctl status prometheus.service
+sudo systemctl start node-exporter.service
+sudo systemctl status node-exporter.service
 ```
 
 ![Скриншот браузера с открытым эндпоинтом](https://github.com/StanislavBaranovskii/9-5-hw-prometheus-2/blob/main/img/9-5-3-1.png "Скриншот браузера с открытым эндпоинтом")
